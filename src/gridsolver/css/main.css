@@ -1,0 +1,46 @@
+* {
+    -fx-main-background-color: #362E41;
+	-fx-primary-color: #A12A31;
+	-fx-secondary-color:  #EA3232;
+    -fx-hover-color:  #F73030   ;
+}
+#backgroundPane{
+    -fx-background-color:  -fx-main-background-color;
+}
+#textField{
+    -fx-background-color:transparent;
+    -fx-border-color:-fx-primary-color;
+    -fx-border-radius:100px;
+    -fx-text-fill: -fx-hover-color;
+}
+#button{
+    -fx-background-color:-fx-secondary-color;
+    -fx-background-radius:10px;
+}
+#textField:focused{
+    -fx-border-color:-fx-secondary-color;
+}
+
+#button:hover{
+    -fx-background-color:  -fx-hover-color;
+}
+#button:armed{
+    -fx-background-color:  -fx-primary-color;
+}
+#grid{
+     -fx-border-color:-fx-primary-color;
+}
+#locatePane{
+    -fx-border-color: -fx-primary-color transparent -fx-primary-color transparent;
+    -fx-border-width:2px;
+}
+.radio-button .radio{
+     -fx-border-color: -fx-primary-color;
+     -fx-border-radius: 100px;
+    -fx-background-color:transparent;
+    -fx-border-width:3px;
+}
+.radio-button:selected .radio{
+    -fx-background-color:-fx-primary-color;
+}
+
