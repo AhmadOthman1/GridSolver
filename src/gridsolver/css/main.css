@@ -27,6 +27,21 @@
 #button:armed{
     -fx-background-color:  -fx-primary-color;
 }
+#backButton{
+    -fx-background-color:-fx-secondary-color;
+    -fx-background-image: url("../images/backW.png");
+    -fx-border-radius:  100%;
+    -fx-background-radius:  50px;
+    -fx-background-repeat: no-repeat; 
+    -fx-background-size: 20px 20px; 
+    -fx-background-position: center center;
+}
+#backButton:hover{
+    -fx-background-color:  -fx-hover-color;
+}
+#backButton:armed{
+    -fx-background-color:  -fx-primary-color;
+}
 #grid{
      -fx-border-color:-fx-primary-color;
 }
