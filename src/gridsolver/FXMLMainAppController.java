@@ -279,49 +279,85 @@ public class FXMLMainAppController implements Initializable {
             
         }
     }
-    private boolean numaric(String str){
+    private boolean numaric(String str){//to find if the string is a number
         for(int i=0;i<str.length();i++){
-            if(!Character.isDigit(str.charAt(i))){
+            if(!Character.isDigit(str.charAt(i)) && str.charAt(i)!='.'){
                 return false;
             }
         }
         return true;
     }
-    private double clacManhattan(String x1,String y1,Button node){
-        String []nodeIndex=node.getId().split("_");
-        nodeIndex[0] = nodeIndex[0].substring(1, nodeIndex[0].length() );
-        int x2=Integer.parseInt(nodeIndex[0]);
-        int y2=Integer.parseInt(nodeIndex[1]);
-        return abs(Integer.parseInt(x1)-x2)+abs(Integer.parseInt(y1)-y2);
+    private double clacManhattan(String x1,String y1,int i,int j){//calculate Manhattan
+        return abs(Integer.parseInt(x1)-i)+abs(Integer.parseInt(y1)-j);
     }
-    private double clacEuclidean(String x1,String y1,Button node){
-        String []nodeIndex=node.getId().split("_");
-        nodeIndex[0] = nodeIndex[0].substring(1, nodeIndex[0].length() );
-        int x2=Integer.parseInt(nodeIndex[0]);
-        int y2=Integer.parseInt(nodeIndex[1]);
-        return sqrt(pow(abs(Integer.parseInt(x1)-x2),2)+pow(abs(Integer.parseInt(y1)-y2),2));
+    private double clacEuclidean(String x1,String y1,int i, int j){//calculate clidean
+        return sqrt(pow(abs(Integer.parseInt(x1)-i),2)+pow(abs(Integer.parseInt(y1)-j),2));
     }
-    /*
-                sourceIndexI="";
-                sourceIndexJ="";
-                targetIndexI1="";
-                targetIndexJ1="";
-                targetIndexI2="";
-                targetIndexJ2="";
-                */
-    private double findpath(String sIndexI,String sIndexJ,String tIndexI1,String tIndexJ1){
-        ArrayList <Button> closedList = new ArrayList();
-        ArrayList <Button> openList = new ArrayList();
-        Button n=new Button();
-        double nh;
-        openList.add(cells.get(sorceIndexInArrayList));
+
+    private BNode findpath(String sIndexI,String sIndexJ,String tIndexI,String tIndexJ){//find the shortest path fun
+        ArrayList <Button> testedList = new ArrayList();
+        ArrayList <BNode> closedList = new ArrayList();
+        ArrayList <BNode> openList = new ArrayList();
+        openList.add(new BNode(0,0,cells.get(sorceIndexInArrayList),null));// add the source
         do{
+            
             if(openList.isEmpty())
-                return -1;
-            if(manhattan.isSelected())
-                clacManhattan(tIndexI1,tIndexJ1,cells.get(sorceIndexInArrayList));
+                return null;
+            
+            if(openList.get(0).i==Integer.parseInt(tIndexI)  &&  openList.get(0).j==Integer.parseInt(tIndexJ)){
+                return openList.get(0);
+            }
+            
+            //check for the neighbours according to rules
+            int parentIndexi=openList.get(0).i;
+            int parentIndexj=openList.get(0).j;
+            int parentCost=openList.get(0).cost;
+            double heuristic=0;
+            if(parentIndexi+1<gridHeight && cells.get(findIndexInArr(parentIndexi+1,parentIndexj)).getId().charAt(0)!='b'){//down 
+                if(manhattan.isSelected()){ heuristic=clacManhattan(tIndexI,tIndexJ,parentIndexi+1,parentIndexj); }
+                if(euclidean.isSelected()){ heuristic=clacEuclidean(tIndexI,tIndexJ,parentIndexi+1,parentIndexj); }
+                BNode n=new BNode(parentCost+1,parentCost+1+heuristic,cells.get(findIndexInArr(parentIndexi+1,parentIndexj)),openList.get(0));
+                for(int arrindex=0;arrindex<openList.size();arrindex++ ){//store in open List 
+                    if(openList.get(arrindex).finalH>n.finalH){openList.add(arrindex, n);}
+                }
+            }
+            if(parentIndexi-1>=0 && cells.get(findIndexInArr(parentIndexi-1,parentIndexj)).getId().charAt(0)!='b'){//Up 
+                if(manhattan.isSelected()){ heuristic=clacManhattan(tIndexI,tIndexJ,parentIndexi-11,parentIndexj); }
+                if(euclidean.isSelected()){ heuristic=clacEuclidean(tIndexI,tIndexJ,parentIndexi-11,parentIndexj); }
+                BNode n=new BNode(parentCost+1,parentCost+1+heuristic,cells.get(findIndexInArr(parentIndexi-1,parentIndexj)),openList.get(0));
+                for(int arrindex=0;arrindex<openList.size();arrindex++ ){//store in open List 
+                    if(openList.get(arrindex).finalH>n.finalH){openList.add(arrindex, n);}
+                }
+            }
+            if(parentIndexj+1<gridWidth && cells.get(findIndexInArr(parentIndexi,parentIndexj+1)).getId().charAt(0)!='b'){//right 
+                if(manhattan.isSelected()){ heuristic=clacManhattan(tIndexI,tIndexJ,parentIndexi,parentIndexj+1); }
+                if(euclidean.isSelected()){ heuristic=clacEuclidean(tIndexI,tIndexJ,parentIndexi,parentIndexj+1); }
+                BNode n=new BNode(parentCost+1,parentCost+1+heuristic,cells.get(findIndexInArr(parentIndexi,parentIndexj+1)),openList.get(0));
+                for(int arrindex=0;arrindex<openList.size();arrindex++ ){//store in open List 
+                    if(openList.get(arrindex).finalH>n.finalH){openList.add(arrindex, n);}
+                }
+            }
+            if(parentIndexj-1>=0 && cells.get(findIndexInArr(parentIndexi,parentIndexj-1)).getId().charAt(0)!='b'){//left 
+                if(manhattan.isSelected()){ heuristic=clacManhattan(tIndexI,tIndexJ,parentIndexi,parentIndexj-1); }
+                if(euclidean.isSelected()){ heuristic=clacEuclidean(tIndexI,tIndexJ,parentIndexi,parentIndexj-1); }
+                BNode n=new BNode(parentCost+1,parentCost+1+heuristic,cells.get(findIndexInArr(parentIndexi,parentIndexj-1)),openList.get(0));
+                for(int arrindex=0;arrindex<openList.size();arrindex++ ){//store in open List 
+                    if(openList.get(arrindex).finalH>n.finalH){openList.add(arrindex, n);}
+                }
+            }
+            closedList.add(openList.get(0));
+            testedList.add(openList.get(0).currentButton);
+            openList.remove(0);  //delete the parent
+            
+            
+            
         } while(!openList.isEmpty());
-        return 0;
+        return null;
+    }
+    
+    private int findIndexInArr(int i, int j){
+        return (i*gridWidth)+j;
+        
     }
     
 }
