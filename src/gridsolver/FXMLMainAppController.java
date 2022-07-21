@@ -26,6 +26,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -49,7 +50,6 @@ public class FXMLMainAppController implements Initializable {
     static int pathIndex=1;
     static BNode target,secTarget;
     boolean  SolutionFlag;
-    ArrayList <Button> testedList = new ArrayList();
     ArrayList <BNode> closedList = new ArrayList();
     ArrayList <BNode> openList = new ArrayList();
     @FXML
@@ -120,7 +120,7 @@ public class FXMLMainAppController implements Initializable {
         targetStyle="-fx-background-color:#F62222;-fx-border-color:black;-fx-border-width:2px;";
         blockedStyle="-fx-background-color:#78724F;-fx-border-color:black;-fx-border-width:2px;";
         unblockedStyle="-fx-background-color:#EAE2B7;-fx-border-color:black;-fx-border-width:2px;";
-        stepStyle="-fx-background-color:rgba(66, 255, 0, 0.3);-fx-border-color:black;-fx-border-width:2px;-fx-text-fill:white;-fx-font-size: 12px;";
+        stepStyle="-fx-background-color:rgba(66, 255, 0, 0.3);-fx-border-color:black;-fx-border-width:2px;-fx-text-fill:white;-fx-font-size: 8px;";
         PathStyle="-fx-background-color:#0013B6;-fx-border-color:black;-fx-border-width:2px;";
     }    
 
@@ -135,7 +135,7 @@ public class FXMLMainAppController implements Initializable {
             targetIndexI2="";
             targetIndexJ2="";
             //check if w*h correct
-            if(numaric(width.getText().trim())&& numaric(height.getText().trim()) && Integer.parseInt(width.getText().trim())>1 && Integer.parseInt(height.getText().trim())>1){
+            if(!height.getText().trim().equals("") && !width.getText().trim().equals("") && numaric(width.getText().trim())&& numaric(height.getText().trim()) && Integer.parseInt(width.getText().trim())>1 && Integer.parseInt(height.getText().trim())>1){
                 gridWidth=Integer.parseInt(width.getText().trim());
                 gridHeight=Integer.parseInt(height.getText().trim());
                 sourceC.setSelected(true);
@@ -270,9 +270,7 @@ public class FXMLMainAppController implements Initializable {
             heuristicPane.setVisible(false);
             stepTime.setText("");
         }
-        
     }
-
     @FXML
     private void solveAction(ActionEvent event) {
         if(event.getSource()==solveButton){
@@ -283,47 +281,44 @@ public class FXMLMainAppController implements Initializable {
             resultPane.setVisible(true);
             resultErrorLabel.setVisible(false);
             SolutionFlag=true;
-            if(!stepTime.getText().trim().equals("") && numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())!=0){//find if time textfield is a number
-                try {
-                    secTarget=(!targetIndexI2.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI2,targetIndexJ2) : null;
-                    ArrayList <BNode> closedList2=closedList;
-                    target=(!targetIndexI1.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI1,targetIndexJ1) : null;
-                    
-                    
-                    
-                    if(target !=null){
-                        if(secTarget!=null){
-                            if(target.finalH>secTarget.finalH){
-                                target=secTarget;
-                                closedList=closedList2;
-                            }
+            try {
+                secTarget=(!targetIndexI2.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI2,targetIndexJ2) : null;//if there is target1
+                ArrayList <BNode> closedList2=closedList;//store closed list for 1
+                target=(!targetIndexI1.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI1,targetIndexJ1) : null;//if there is target2
+                if(target !=null){
+                    if(secTarget!=null){
+                        if(target.finalH>secTarget.finalH){
+                            target=secTarget;
+                            closedList=closedList2;
                         }
                     }
-                    else if(secTarget!=null){
-                        target=secTarget;
-                        closedList=closedList2;
-                    }
-                    else{
-                        resultErrorLabel.setText("There is no solution for the grid");
-                        resultErrorLabel.setVisible(true);
-                        SolutionFlag=false;
-                    }
-                     
+                }
+                else if(secTarget!=null){
+                    target=secTarget;
+                    closedList=closedList2;
+                }
+                else{
+                    resultErrorLabel.setText("There is no solution for the grid");
+                    resultErrorLabel.setVisible(true);
+                    SolutionFlag=false;
+                }
                         
-                        Timeline timeline;
+                if(!stepTime.getText().trim().equals("") && numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())!=0){//find if time textfield is a number
+                    Timeline timeline;
                     timeline = new Timeline(
                             new KeyFrame(Duration.millis(Integer.parseInt(stepTime.getText().trim())), new EventHandler<ActionEvent>() {
                                 @Override
-                                public void handle(ActionEvent e) {
+                                public void handle(ActionEvent e) {//show the steps
                                     if(closedList.size()>pathIndex){
                                         closedList.get(pathIndex).currentButton.setStyle(stepStyle);
-                                        closedList.get(pathIndex).currentButton.setText(String.valueOf(closedList.get(pathIndex).finalH));
+                                        closedList.get(pathIndex).currentButton.setText(String.valueOf(closedList.get(pathIndex).finalH) +"/"+pathIndex);
+                                        closedList.get(pathIndex).currentButton.setTooltip(new Tooltip(closedList.get(pathIndex).finalH-closedList.get(pathIndex).cost +"+"+closedList.get(pathIndex).cost+"/"+pathIndex));
                                         pathIndex++;
                                     }
-                                    
                                     else{
-                                        if(SolutionFlag){
-                                            while(target.ParentNode!=null){
+                                        if(SolutionFlag && target!=null ){//show the shortest path
+                                            target=target.ParentNode;
+                                            while(target!=null && target.ParentNode!=null){
                                                 target.currentButton.setStyle(PathStyle);
                                                 target=target.ParentNode;
                                             }
@@ -331,35 +326,117 @@ public class FXMLMainAppController implements Initializable {
                                     }
                                 }
                             })
-                            
                     );
                         timeline.setCycleCount(Timeline.INDEFINITE);
                         timeline.play();
-                      
-                    
-                } catch (Exception ex) {
+                
+                }
+                else if(stepTime.getText().trim().equals("") || (numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())==0)){//if time is 0
+                    while(target!=null && target.ParentNode!=null){//show the shortest path
+                        target.currentButton.setStyle(PathStyle);
+                        target=target.ParentNode;
+                    }
+                }
+                else{
+                    heuristicErrorLabel.setText("*Error: Please Enter only numbers for the Time");
+                }
+            } catch (Exception ex) {
                     Logger.getLogger(FXMLMainAppController.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
-            else if(stepTime.getText().trim().equals("") || (numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())==0)){
-                while(target.ParentNode!=null){
-                    target.currentButton.setStyle(PathStyle);
-                    target=target.ParentNode;
-                }
-            }
-            else{
-                heuristicErrorLabel.setText("*Error: Please Enter only numbers for the Time");
-            }
-            
         }
     }
- 
-    private boolean numaric(String str){//to find if the string is a number
-        for(int i=0;i<str.length();i++){
-            if(!Character.isDigit(str.charAt(i)) ){
-                return false;
+    private BNode findpath(String sIndexI,String sIndexJ,String tIndexI,String tIndexJ) throws InterruptedException{//find the shortest path fun
+        closedList = new ArrayList();
+        openList = new ArrayList();
+        openList.add(new BNode(0,0,cells.get(sorceIndexInArrayList),null));// add the source
+        do{
+            if(openList.isEmpty())
+                return null;
+            
+            if(openList.get(0).i==Integer.parseInt(tIndexI)  &&  openList.get(0).j==Integer.parseInt(tIndexJ)){//if goul
+                return openList.get(0);
             }
-        }
+            //check for the neighbours according to rules
+            int parentIndexi=openList.get(0).i;
+            int parentIndexj=openList.get(0).j;            
+            if(parentIndexi+1<gridHeight && cells.get(findIndexInArr(parentIndexi+1,parentIndexj)).getId().charAt(0)!='b' ){//down 
+                    checkNeighbours( tIndexI, tIndexJ, parentIndexi+1, parentIndexj);
+            }
+            if(parentIndexi-1>=0 && cells.get(findIndexInArr(parentIndexi-1,parentIndexj)).getId().charAt(0)!='b'){//Up 
+                checkNeighbours( tIndexI, tIndexJ, parentIndexi-1, parentIndexj);
+            }
+            if(parentIndexj+1<gridWidth && cells.get(findIndexInArr(parentIndexi,parentIndexj+1)).getId().charAt(0)!='b'){//right 
+                checkNeighbours( tIndexI, tIndexJ, parentIndexi, parentIndexj+1);
+            }
+            if(parentIndexj-1>=0 && cells.get(findIndexInArr(parentIndexi,parentIndexj-1)).getId().charAt(0)!='b'){//left 
+                checkNeighbours( tIndexI, tIndexJ, parentIndexi, parentIndexj-1);
+            }
+            closedList.add(openList.get(0));
+            openList.remove(0);  //delete the parent
+        } while(!openList.isEmpty());
+        return null;
+    }
+    private void checkNeighbours(String tIndexI,String tIndexJ,int Indexi,int Indexj){//cheak for neighbour
+        int parentCost=openList.get(0).cost;
+        double heuristic=0;
+        if(manhattan.isSelected()){ heuristic=clacManhattan(tIndexI,tIndexJ,Indexi,Indexj); }//if manhattan is selected calc the heuristic
+        if(euclidean.isSelected()){ heuristic=clacEuclidean(tIndexI,tIndexJ,Indexi,Indexj); }//if euclidean is selected calc the heuristic
+                BNode n=new BNode(parentCost+1,parentCost+1+heuristic,cells.get(findIndexInArr(Indexi,Indexj)),openList.get(0));//create the node
+                boolean flag=true;
+                for(int listIndex =0;listIndex<closedList.size();listIndex++){//loop on closed list
+                    if(closedList.get(listIndex).currentButton.equals(n.currentButton)){//if the nde in closed list
+                        if(closedList.get(listIndex).finalH >n.finalH)//if the fNode < fStored in CL replace it
+                            closedList.set(listIndex, n);
+                        flag=false;//dont check the OL
+                        break;
+                    }
+                }
+                if(flag){//if node not on CL
+                    boolean notInOpenFlag=true;
+                    for(int listIndex =1;listIndex<openList.size();listIndex++){//check for the open list
+                        if(openList.get(listIndex).currentButton.equals(n.currentButton)  ){//if the node in OL
+                            if(openList.get(listIndex).finalH == n.finalH){//if f() is equals check for h (h=f-g)
+                                if(openList.get(listIndex).finalH-openList.get(listIndex).cost > n.finalH-n.cost){
+                                    openList.remove(listIndex);
+                                    notInOpenFlag=true;//to add the node again with diffrent path
+                                    break;
+                                }
+                            }
+                            else if(openList.get(listIndex).finalH >n.finalH){//if f() OL > f()Node thin Noode is better
+                                openList.remove(listIndex);
+                                notInOpenFlag=true;//to add the node again with diffrent path
+                                break;
+                            }
+                            notInOpenFlag=false;//else : f()OL < f()Node so we dont remove it and dont add it again
+                            break;
+                            }
+                    }
+                    if(notInOpenFlag){
+                        boolean endFlag=true;
+                        for(int arrindex=1;arrindex<openList.size();arrindex++ ){//store in open List 
+                            if(openList.get(arrindex).finalH==n.finalH){
+                                if(openList.get(arrindex).finalH-openList.get(arrindex).cost >n.finalH-n.cost ){
+                                    openList.add(arrindex, n);
+                                    endFlag=false; 
+                                    break;
+                                }
+                            }
+                            else if(openList.get(arrindex).finalH>n.finalH){
+                            openList.add(arrindex, n);
+                            endFlag=false; 
+                            break;
+                            }
+                        }
+                        if(endFlag){
+                            openList.add(n);
+                        }
+                    }
+                }
+    }
+    private boolean numaric(String str){//to find if the string is a number
+        for(int i=0;i<str.length();i++)
+            if(!Character.isDigit(str.charAt(i)) )
+                return false;
         return true;
     }
     private double clacManhattan(String x1,String y1,int i,int j){//calculate Manhattan
@@ -368,98 +445,6 @@ public class FXMLMainAppController implements Initializable {
     private double clacEuclidean(String x1,String y1,int i, int j){//calculate clidean
         return sqrt(pow(abs(Integer.parseInt(x1)-i),2)+pow(abs(Integer.parseInt(y1)-j),2));
     }
-
-    private BNode findpath(String sIndexI,String sIndexJ,String tIndexI,String tIndexJ) throws InterruptedException{//find the shortest path fun
-        testedList = new ArrayList();
-        closedList = new ArrayList();
-        openList = new ArrayList();
-        
-        openList.add(new BNode(0,0,cells.get(sorceIndexInArrayList),null));// add the source
-        do{
-            if(openList.isEmpty())
-                return null;
-            
-            if(openList.get(0).i==Integer.parseInt(tIndexI)  &&  openList.get(0).j==Integer.parseInt(tIndexJ)){
-                return openList.get(0);
-            }
-            
-            
-            //check for the neighbours according to rules
-            int parentIndexi=openList.get(0).i;
-            int parentIndexj=openList.get(0).j;            
-            if(parentIndexi+1<gridHeight && cells.get(findIndexInArr(parentIndexi+1,parentIndexj)).getId().charAt(0)!='b' ){//down 
-                    checkNeighbours( tIndexI, tIndexJ, parentIndexi+1, parentIndexj,openList, closedList);
-                
-            }
-            if(parentIndexi-1>=0 && cells.get(findIndexInArr(parentIndexi-1,parentIndexj)).getId().charAt(0)!='b'){//Up 
-                checkNeighbours( tIndexI, tIndexJ, parentIndexi-1, parentIndexj,openList, closedList);
-            }
-            if(parentIndexj+1<gridWidth && cells.get(findIndexInArr(parentIndexi,parentIndexj+1)).getId().charAt(0)!='b'){//right 
-                checkNeighbours( tIndexI, tIndexJ, parentIndexi, parentIndexj+1,openList, closedList);
-            }
-            if(parentIndexj-1>=0 && cells.get(findIndexInArr(parentIndexi,parentIndexj-1)).getId().charAt(0)!='b'){//left 
-                checkNeighbours( tIndexI, tIndexJ, parentIndexi, parentIndexj-1,openList, closedList);
-            }
-            closedList.add(openList.get(0));
-            testedList.add(openList.get(0).currentButton);
-            openList.remove(0);  //delete the parent
-            
-            
-            
-        } while(!openList.isEmpty());
-        return null;
-    }
-    
-    private int findIndexInArr(int i, int j){
-        return (i*gridWidth)+j;
-        
-    }
-    
-    private void checkNeighbours(String tIndexI,String tIndexJ,int Indexi,int Indexj,ArrayList<BNode> openList,ArrayList<BNode> closedList){
-        int parentCost=openList.get(0).cost;
-        double heuristic=0;
-        if(manhattan.isSelected()){ heuristic=clacManhattan(tIndexI,tIndexJ,Indexi,Indexj); }
-        if(euclidean.isSelected()){ heuristic=clacEuclidean(tIndexI,tIndexJ,Indexi,Indexj); }
-                BNode n=new BNode(parentCost+1,parentCost+1+heuristic,cells.get(findIndexInArr(Indexi,Indexj)),openList.get(0));
-                boolean flag=true;
-                for(int listIndex =0;listIndex<closedList.size();listIndex++){
-                    if(closedList.get(listIndex).currentButton.equals(n.currentButton)){
-                        if(closedList.get(listIndex).finalH >n.finalH)
-                            closedList.set(listIndex, n);
-                        flag=false;
-                        break;
-                    }
-                    
-                }
-                if(flag){
-                    boolean notInOpenFlag=true;
-                    for(int listIndex =0;listIndex<openList.size();listIndex++){
-                        if(openList.get(listIndex).currentButton.equals(n.currentButton)  ){
-                            if(openList.get(listIndex).finalH >n.finalH){
-                                openList.remove(listIndex);
-                                notInOpenFlag=true;
-                            }
-                            notInOpenFlag=false;
-                            break;
-                            }
-                    }
-                    if(notInOpenFlag){
-                        boolean endFlag=true;
-                        for(int arrindex=0;arrindex<openList.size();arrindex++ ){//store in open List 
-                            if(openList.get(arrindex).finalH>n.finalH){
-                            openList.add(arrindex, n);
-                            endFlag=false; 
-                            
-                            
-                            break;
-                            }
-                        }
-                        if(endFlag){
-                            openList.add(n);
-                            
-                        }
-                }
-                }
-    }
+    private int findIndexInArr(int i, int j){return (i*gridWidth)+j;}
 }
 
