@@ -29,7 +29,7 @@ public class GridSolver extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLMainApp.fxml"));
         //stage.initStyle(StageStyle.UNDECORATED);
         Scene scene = new Scene(root);
-        stage.setMinWidth(1000);
+        stage.setMinWidth(1200);
         stage.setMinHeight(600);
         stage.setTitle("GridSolver");
         stage.setScene(scene);

@@ -10,30 +10,17 @@ import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import java.net.URL;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -42,7 +29,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
@@ -61,7 +47,8 @@ public class FXMLMainAppController implements Initializable {
     int sorceIndexInArrayList;
     int gridWidth,gridHeight;
     static int pathIndex=1;
-    static BNode target;
+    static BNode target,secTarget;
+    boolean  SolutionFlag;
     ArrayList <Button> testedList = new ArrayList();
     ArrayList <BNode> closedList = new ArrayList();
     ArrayList <BNode> openList = new ArrayList();
@@ -109,6 +96,10 @@ public class FXMLMainAppController implements Initializable {
     private Button backButton1;
     @FXML
     private TextField stepTime;
+    @FXML
+    private AnchorPane resultPane;
+    @FXML
+    private Label resultErrorLabel;
     /**
      * Initializes the controller class.
      */
@@ -129,7 +120,7 @@ public class FXMLMainAppController implements Initializable {
         targetStyle="-fx-background-color:#F62222;-fx-border-color:black;-fx-border-width:2px;";
         blockedStyle="-fx-background-color:#78724F;-fx-border-color:black;-fx-border-width:2px;";
         unblockedStyle="-fx-background-color:#EAE2B7;-fx-border-color:black;-fx-border-width:2px;";
-        stepStyle="-fx-background-color:#42FF00;-fx-border-color:black;-fx-border-width:2px;-fx-opacity: 0.5;";
+        stepStyle="-fx-background-color:rgba(66, 255, 0, 0.3);-fx-border-color:black;-fx-border-width:2px;-fx-text-fill:white;-fx-font-size: 12px;";
         PathStyle="-fx-background-color:#0013B6;-fx-border-color:black;-fx-border-width:2px;";
     }    
 
@@ -144,7 +135,7 @@ public class FXMLMainAppController implements Initializable {
             targetIndexI2="";
             targetIndexJ2="";
             //check if w*h correct
-            if(numaric(width.getText().trim())&& numaric(height.getText().trim()) && Integer.parseInt(width.getText().trim())!=0 && Integer.parseInt(height.getText().trim())!=0){
+            if(numaric(width.getText().trim())&& numaric(height.getText().trim()) && Integer.parseInt(width.getText().trim())>1 && Integer.parseInt(height.getText().trim())>1){
                 gridWidth=Integer.parseInt(width.getText().trim());
                 gridHeight=Integer.parseInt(height.getText().trim());
                 sourceC.setSelected(true);
@@ -277,27 +268,46 @@ public class FXMLMainAppController implements Initializable {
             gridPane.setVisible(true);
             locatePane.setVisible(true);
             heuristicPane.setVisible(false);
-            manhattan.setDisable(false);
-            euclidean.setDisable(false);
-            stepTime.setDisable(false);
+            stepTime.setText("");
         }
+        
     }
 
     @FXML
     private void solveAction(ActionEvent event) {
         if(event.getSource()==solveButton){
-            
-            manhattan.setDisable(true);
-            euclidean.setDisable(true);
-            stepTime.setDisable(true);
-            
-            
-            
-            if(numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())!=0){
+            mainPane.setVisible(false);
+            gridPane.setVisible(true);
+            locatePane.setVisible(false);
+            heuristicPane.setVisible(false);
+            resultPane.setVisible(true);
+            resultErrorLabel.setVisible(false);
+            SolutionFlag=true;
+            if(!stepTime.getText().trim().equals("") && numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())!=0){//find if time textfield is a number
                 try {
-                    //findpath(sourceIndexI,sourceIndexJ,targetIndexI1,targetIndexJ1);
-                    System.out.println(findpath(sourceIndexI,sourceIndexJ,targetIndexI1,targetIndexJ1).currentButton.getId());
-                     target=findpath(sourceIndexI,sourceIndexJ,targetIndexI1,targetIndexJ1);
+                    secTarget=(!targetIndexI2.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI2,targetIndexJ2) : null;
+                    ArrayList <BNode> closedList2=closedList;
+                    target=(!targetIndexI1.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI1,targetIndexJ1) : null;
+                    
+                    
+                    
+                    if(target !=null){
+                        if(secTarget!=null){
+                            if(target.finalH>secTarget.finalH){
+                                target=secTarget;
+                                closedList=closedList2;
+                            }
+                        }
+                    }
+                    else if(secTarget!=null){
+                        target=secTarget;
+                        closedList=closedList2;
+                    }
+                    else{
+                        resultErrorLabel.setText("There is no solution for the grid");
+                        resultErrorLabel.setVisible(true);
+                        SolutionFlag=false;
+                    }
                      
                         
                         Timeline timeline;
@@ -307,13 +317,16 @@ public class FXMLMainAppController implements Initializable {
                                 public void handle(ActionEvent e) {
                                     if(closedList.size()>pathIndex){
                                         closedList.get(pathIndex).currentButton.setStyle(stepStyle);
+                                        closedList.get(pathIndex).currentButton.setText(String.valueOf(closedList.get(pathIndex).finalH));
                                         pathIndex++;
                                     }
+                                    
                                     else{
-                                        
-                                        while(target.ParentNode!=null){
-                                            target.currentButton.setStyle(PathStyle);
-                                            target=target.ParentNode;
+                                        if(SolutionFlag){
+                                            while(target.ParentNode!=null){
+                                                target.currentButton.setStyle(PathStyle);
+                                                target=target.ParentNode;
+                                            }
                                         }
                                     }
                                 }
@@ -328,7 +341,7 @@ public class FXMLMainAppController implements Initializable {
                     Logger.getLogger(FXMLMainAppController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            else if(numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())==0){
+            else if(stepTime.getText().trim().equals("") || (numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())==0)){
                 while(target.ParentNode!=null){
                     target.currentButton.setStyle(PathStyle);
                     target=target.ParentNode;
