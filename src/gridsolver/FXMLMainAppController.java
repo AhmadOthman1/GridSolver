@@ -100,6 +100,8 @@ public class FXMLMainAppController implements Initializable {
     private AnchorPane resultPane;
     @FXML
     private Label resultErrorLabel;
+    @FXML
+    private Button playGridButton;
     /**
      * Initializes the controller class.
      */
@@ -252,6 +254,7 @@ public class FXMLMainAppController implements Initializable {
                 locateErrorLabel.setVisible(true);
             }
         }
+        
     }
 
     @FXML

@@ -30,7 +30,9 @@ public class GridSolver extends Application {
         //stage.initStyle(StageStyle.UNDECORATED);
         Scene scene = new Scene(root);
         stage.setMinWidth(1200);
-        stage.setMinHeight(600);
+        stage.setMinHeight(640);
+        stage.setMaxWidth(1200);
+        stage.setMaxHeight(640);
         stage.setTitle("GridSolver");
         stage.setScene(scene);
         stage.show();
