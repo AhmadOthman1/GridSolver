@@ -130,6 +130,26 @@
                   <Font size="20.0" />
                </font>
             </Label>
+            <Label layoutX="12.0" layoutY="166.0" text="Solution Nodes:" textFill="#d62828">
+               <font>
+                  <Font name="AdobeHeitiStd-Regular" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="12.0" layoutY="222.0" text="Tested Nodes:" textFill="#d62828">
+               <font>
+                  <Font name="AdobeHeitiStd-Regular" size="24.0" />
+               </font>
+            </Label>
+            <Label fx:id="solutionNum" layoutX="190.0" layoutY="166.0" prefHeight="26.0" prefWidth="182.0" text="0" textFill="#28d44b">
+               <font>
+                  <Font name="AdobeHeitiStd-Regular" size="24.0" />
+               </font>
+            </Label>
+            <Label fx:id="testedNum" layoutX="177.0" layoutY="222.0" prefHeight="26.0" prefWidth="190.0" text="0" textFill="#28d44b">
+               <font>
+                  <Font name="AdobeHeitiStd-Regular" size="24.0" />
+               </font>
+            </Label>
          </children>
       </AnchorPane>
    </children>

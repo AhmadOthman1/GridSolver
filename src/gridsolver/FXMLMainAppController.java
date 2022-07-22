@@ -48,6 +48,7 @@ public class FXMLMainAppController implements Initializable {
     int sorceIndexInArrayList;
     int gridWidth,gridHeight;
     static int pathIndex=1;
+    static int solutionSNum=1;
     static BNode target,secTarget;
     boolean  SolutionFlag;
     ArrayList <BNode> closedList = new ArrayList();
@@ -101,7 +102,9 @@ public class FXMLMainAppController implements Initializable {
     @FXML
     private Label resultErrorLabel;
     @FXML
-    private Button playGridButton;
+    private Label solutionNum;
+    @FXML
+    private Label testedNum;
     /**
      * Initializes the controller class.
      */
@@ -172,6 +175,7 @@ public class FXMLMainAppController implements Initializable {
                                         locateErrorLabel.setText("*Error: You already chose the cell, please RESET the cell first.");
                                         locateErrorLabel.setVisible(true);
                                     }
+                                    targetC.setSelected(true);
                                 }
                                 else if(targetC.isSelected()){//if the cell is unblocked and no target chosed
                                     if( b.getId().charAt(0)=='u' && (targetIndexI1.equals("") || targetIndexI2.equals(""))){//if the cell is unblocked and no target chosed(1 || 2)
@@ -191,6 +195,7 @@ public class FXMLMainAppController implements Initializable {
                                         locateErrorLabel.setText("*Error: You already chose the cell, please RESET the cell first.");
                                         locateErrorLabel.setVisible(true);
                                     }
+                                    
                                 }
                                 else if(blockedC.isSelected()){//if the cell is unblocked and blocked choice is selected
                                     if(b.getId().charAt(0)=='u'){//if the cell is unblocked
@@ -277,12 +282,7 @@ public class FXMLMainAppController implements Initializable {
     @FXML
     private void solveAction(ActionEvent event) {
         if(event.getSource()==solveButton){
-            mainPane.setVisible(false);
-            gridPane.setVisible(true);
-            locatePane.setVisible(false);
-            heuristicPane.setVisible(false);
-            resultPane.setVisible(true);
-            resultErrorLabel.setVisible(false);
+            
             SolutionFlag=true;
             try {
                 secTarget=(!targetIndexI2.equals("")) ? findpath(sourceIndexI,sourceIndexJ,targetIndexI2,targetIndexJ2) : null;//if there is target1
@@ -324,7 +324,10 @@ public class FXMLMainAppController implements Initializable {
                                             while(target!=null && target.ParentNode!=null){
                                                 target.currentButton.setStyle(PathStyle);
                                                 target=target.ParentNode;
+                                                solutionSNum++;
                                             }
+                                            solutionNum.setText(String.valueOf(solutionSNum));
+                                            testedNum.setText(String.valueOf(closedList.size()));
                                         }
                                     }
                                 }
@@ -332,13 +335,28 @@ public class FXMLMainAppController implements Initializable {
                     );
                         timeline.setCycleCount(Timeline.INDEFINITE);
                         timeline.play();
-                
+                mainPane.setVisible(false);
+                gridPane.setVisible(true);
+                locatePane.setVisible(false);
+                heuristicPane.setVisible(false);
+                resultPane.setVisible(true);
+                resultErrorLabel.setVisible(false);
                 }
                 else if(stepTime.getText().trim().equals("") || (numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())==0)){//if time is 0
+                    target=target.ParentNode;
                     while(target!=null && target.ParentNode!=null){//show the shortest path
                         target.currentButton.setStyle(PathStyle);
                         target=target.ParentNode;
+                        solutionSNum++;
                     }
+                    solutionNum.setText(String.valueOf(solutionSNum));
+                    testedNum.setText(String.valueOf(closedList.size()));
+                    mainPane.setVisible(false);
+                    gridPane.setVisible(true);
+                    locatePane.setVisible(false);
+                    heuristicPane.setVisible(false);
+                    resultPane.setVisible(true);
+                    resultErrorLabel.setVisible(false);
                 }
                 else{
                     heuristicErrorLabel.setText("*Error: Please Enter only numbers for the Time");
@@ -346,6 +364,8 @@ public class FXMLMainAppController implements Initializable {
             } catch (Exception ex) {
                     Logger.getLogger(FXMLMainAppController.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            
+            
         }
     }
     private BNode findpath(String sIndexI,String sIndexJ,String tIndexI,String tIndexJ) throws InterruptedException{//find the shortest path fun
