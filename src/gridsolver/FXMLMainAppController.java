@@ -48,7 +48,7 @@ public class FXMLMainAppController implements Initializable {
     int sorceIndexInArrayList;
     int gridWidth,gridHeight;
     static int pathIndex=1;
-    static int solutionSNum=1;
+    static int solutionSNum=0;
     static BNode target,secTarget;
     boolean  SolutionFlag;
     ArrayList <BNode> closedList = new ArrayList();
@@ -326,8 +326,8 @@ public class FXMLMainAppController implements Initializable {
                                                 target=target.ParentNode;
                                                 solutionSNum++;
                                             }
-                                            solutionNum.setText(String.valueOf(solutionSNum));
-                                            testedNum.setText(String.valueOf(closedList.size()));
+                                            solutionNum.setText(String.valueOf(solutionSNum+1));
+                                            
                                         }
                                     }
                                 }
@@ -340,14 +340,15 @@ public class FXMLMainAppController implements Initializable {
                 locatePane.setVisible(false);
                 heuristicPane.setVisible(false);
                 resultPane.setVisible(true);
-                resultErrorLabel.setVisible(false);
                 }
                 else if(stepTime.getText().trim().equals("") || (numaric(stepTime.getText().trim()) && Integer.parseInt(stepTime.getText())==0)){//if time is 0
-                    target=target.ParentNode;
-                    while(target!=null && target.ParentNode!=null){//show the shortest path
-                        target.currentButton.setStyle(PathStyle);
+                    if(SolutionFlag && target!=null ){
                         target=target.ParentNode;
-                        solutionSNum++;
+                        while(target!=null && target.ParentNode!=null){//show the shortest path
+                            target.currentButton.setStyle(PathStyle);
+                            target=target.ParentNode;
+                            solutionSNum++;
+                        }
                     }
                     solutionNum.setText(String.valueOf(solutionSNum));
                     testedNum.setText(String.valueOf(closedList.size()));
@@ -356,7 +357,6 @@ public class FXMLMainAppController implements Initializable {
                     locatePane.setVisible(false);
                     heuristicPane.setVisible(false);
                     resultPane.setVisible(true);
-                    resultErrorLabel.setVisible(false);
                 }
                 else{
                     heuristicErrorLabel.setText("*Error: Please Enter only numbers for the Time");
@@ -365,7 +365,7 @@ public class FXMLMainAppController implements Initializable {
                     Logger.getLogger(FXMLMainAppController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             
-            
+            testedNum.setText(String.valueOf(closedList.size()));
         }
     }
     private BNode findpath(String sIndexI,String sIndexJ,String tIndexI,String tIndexJ) throws InterruptedException{//find the shortest path fun
